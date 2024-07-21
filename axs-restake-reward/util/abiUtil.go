@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func ParseAbi() abi.ABI {
-	jsonFile, err := os.Open("abi/axs_staking_abi.json")
+func ParseAbi(path string) abi.ABI {
+	jsonFile, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Failed to open ABI file: %v", err)
 	}

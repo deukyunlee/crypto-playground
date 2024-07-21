@@ -16,8 +16,12 @@ import (
 	"time"
 )
 
-func RestakeRewards() {
+const (
+	StakingContractAddress   = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
+	RestakeRewardsMethodName = "restakeRewards"
+)
 
+func RestakeRewards() {
 	v := util.GetViper()
 
 	chainId := v.GetInt64("chainId")
@@ -29,9 +33,9 @@ func RestakeRewards() {
 
 	ethCli, ctx := ethClient.GetEthClient()
 
-	contractAddress := common.HexToAddress(ContractAddress)
+	contractAddress := common.HexToAddress(StakingContractAddress)
 
-	parsedABI := util.ParseAbi()
+	parsedABI := util.ParseAbi("abi/axs_staking_abi.json")
 
 	contract := bind.NewBoundContract(contractAddress, parsedABI, ethCli, ethCli, ethCli)
 
@@ -103,11 +107,6 @@ func RestakeRewards() {
 		log.Println(finalReceipt)
 	}
 }
-
-const (
-	ContractAddress          = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
-	RestakeRewardsMethodName = "restakeRewards"
-)
 
 func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {
 	receipt, err := client.TransactionReceipt(ctx, txHash)
