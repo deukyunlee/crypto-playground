@@ -12,7 +12,7 @@ import (
 
 const axsContractAddress = "0x97a9107c1793bc407d6f527b77e7fff4d812bece"
 
-func GetBalance(ctx context.Context) (*big.Int, error) {
+func GetBalance(ctx context.Context) (*big.Float, error) {
 	v := util.GetViper()
 
 	accountAddressStr := v.GetString("accountAddress")
@@ -42,12 +42,14 @@ func GetBalance(ctx context.Context) (*big.Int, error) {
 	if err != nil {
 		fmt.Println("Error unpacking output:", err)
 	}
-	balanceAmount.Div(balanceAmount, big.NewInt(1000000000000000000))
+	weiPerEther := new(big.Float).SetFloat64(1e18)
 
-	return balanceAmount, nil
+	balanceAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(balanceAmount), weiPerEther)
+
+	return balanceAmountInEther, nil
 }
 
-func GetStakingAmount(ctx context.Context) (*big.Int, error) {
+func GetStakingAmount(ctx context.Context) (*big.Float, error) {
 	v := util.GetViper()
 
 	accountAddressStr := v.GetString("accountAddress")
@@ -78,7 +80,9 @@ func GetStakingAmount(ctx context.Context) (*big.Int, error) {
 	if err != nil {
 		fmt.Println("Error unpacking output:", err)
 	}
+	weiPerEther := new(big.Float).SetFloat64(1e18)
 
-	stakingAmount.Div(stakingAmount, big.NewInt(1000000000000000000))
-	return stakingAmount, nil
+	stakingAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(stakingAmount), weiPerEther)
+
+	return stakingAmountInEther, nil
 }
