@@ -2,7 +2,10 @@ module github.com/deukyunlee/crypto-playground
 
 go 1.22.3
 
-require github.com/ethereum/go-ethereum v1.14.7
+require (
+	github.com/ethereum/go-ethereum v1.14.7
+	github.com/spf13/viper v1.19.0
+)
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -32,7 +35,6 @@ require (
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect

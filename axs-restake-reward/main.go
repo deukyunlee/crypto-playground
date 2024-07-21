@@ -1,156 +1,77 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"github.com/deukyunlee/crypto-playground/ethClient"
-	"github.com/deukyunlee/crypto-playground/util"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
+	"flag"
+	"github.com/deukyunlee/crypto-playground/core"
 	"log"
-	"math/big"
 	"os"
 	"time"
-
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
-
-// Configurations from config package
-const (
-	STAKE_LOGS                  = "./logs/staking_logs.log"
-	CONTRACT_ADDRESS            = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
-	RESTAKE_REWARDS_METHOD_NAME = "restakeRewards"
-	ESTIMATE_GAS_SELECTOR       = "0x3d8527ba"
-)
-
-func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {
-	receipt, err := client.TransactionReceipt(ctx, txHash)
-	if err != nil {
-		if errors.Is(err, ethereum.NotFound) {
-			log.Printf("Transaction %s not found.\n", txHash.Hex())
-			return nil
-		}
-		log.Fatal(err)
-	}
-	return receipt
-}
-
-func waitForTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash, timeout time.Duration) *types.Receipt {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	timeoutTimer := time.NewTimer(timeout)
-	defer timeoutTimer.Stop()
-
-	for {
-		select {
-		case <-ticker.C:
-			receipt := getTransactionReceipt(ctx, client, txHash)
-			if receipt != nil {
-				return receipt
-			}
-		case <-timeoutTimer.C:
-			log.Printf("Time exhausted while waiting for Transaction %s.\n", txHash.Hex())
-			return nil
-		}
-	}
-}
 
 func main() {
+	stakeLogPath := "./logs/staking_logs.log"
+
 	// Setup logging
-	logFile, err := os.OpenFile(STAKE_LOGS, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logFile, err := os.OpenFile(stakeLogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logFile.Close()
+	defer func(logFile *os.File) {
+		err = logFile.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(logFile)
+
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	v := util.GetViper()
+	hourPtr := flag.Int("hour", 0, "cron hour")
+	minutePtr := flag.Int("minute", 0, "cron minute")
 
-	chainId := v.GetInt64("chainId")
-	gasLimit := v.GetUint64("gasLimit")
-	accountAddressStr := v.GetString("accountAddress")
+	flag.Parse()
 
-	accountAddress := common.HexToAddress(accountAddressStr)
-	PK := v.GetString("pk")
+	hour := *hourPtr
+	minute := *minutePtr
 
-	ethCli, ctx := ethClient.GetEthClient()
+	log.Printf("[INITIAL] [%v] hour, minute: %v, %v\n", time.Now().Format(time.RFC3339), hour, minute)
 
-	contractAddress := common.HexToAddress(CONTRACT_ADDRESS)
-
-	parsedABI := util.ParseAbi()
-
-	contract := bind.NewBoundContract(contractAddress, parsedABI, ethCli, ethCli, ethCli)
-
-	nonce, err := ethCli.PendingNonceAt(ctx, accountAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Nonce: %d\n", nonce)
-
-	log.Println("Restaking...")
-
-	gasPrice, err := ethCli.SuggestGasPrice(ctx)
-	if err != nil {
-		log.Fatal(err)
+	now := time.Now()
+	initialTick := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
+	if initialTick.Before(now) {
+		initialTick = initialTick.Add(24 * time.Hour)
 	}
 
-	msg := ethereum.CallMsg{
-		From: accountAddress,
-		To:   &contractAddress,
-		Data: common.FromHex(ESTIMATE_GAS_SELECTOR),
-	}
-	gas, err := ethCli.EstimateGas(ctx, msg)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	initialSleepDuration := initialTick.Sub(now)
+	log.Printf("Sleeping for %s until the first execution at %s\n", initialSleepDuration, initialTick.Format(time.RFC3339))
 
-	log.Printf("gas: %d\n", gas)
+	time.Sleep(initialSleepDuration)
+	for {
+		minute += 1
 
-	// Create the transaction
-	tx, err := contract.Transact(&bind.TransactOpts{
-		From:     accountAddress,
-		Nonce:    big.NewInt(int64(nonce)),
-		GasLimit: gasLimit,
-		GasPrice: gasPrice,
-		Signer: func(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
-			privateKey, err := crypto.HexToECDSA(PK[2:])
-			if err != nil {
-				return nil, err
-			}
-			signer := types.NewEIP155Signer(big.NewInt(chainId))
-			return types.SignTx(tx, signer, privateKey)
-		},
-	}, RESTAKE_REWARDS_METHOD_NAME)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	txHash := tx.Hash()
-	log.Printf("Hash: %s - Explorer: https://explorer.roninchain.com/tx/%s", txHash.Hex(), txHash.Hex())
-
-	finalReceipt := waitForTransactionReceipt(ctx, ethCli, txHash, 5*time.Minute)
-	if finalReceipt != nil {
-		log.Println("Sleep for 60 seconds")
-		time.Sleep(60 * time.Second)
-		finalReceipt = getTransactionReceipt(ctx, ethCli, txHash)
-		if finalReceipt != nil {
-			txStatus := finalReceipt.Status
-			if txStatus == 1 {
-				log.Println("Restake tx status Ok")
-				log.Println("DONE")
-			} else {
-				log.Println("Restake tx status Not Ok")
-				log.Println("DONE & FAILED")
-			}
-		} else {
-			log.Println("Restake receipt is None")
+		if minute >= 60 {
+			minute = 0
+			hour += 1
 		}
-		log.Println(finalReceipt)
+
+		if hour >= 24 {
+			hour = 0
+		}
+
+		log.Printf("[CURRENT] [%v] hour: %v, minute: %v\n", time.Now().Format(time.RFC3339), hour, minute)
+
+		time.Sleep(123123123)
+		core.RestakeRewards()
+
+		// Calculate the duration to sleep until the next minute
+		now := time.Now()
+		nextTick := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
+		if nextTick.Before(now) {
+			nextTick = nextTick.Add(time.Hour * 24)
+		}
+		sleepDuration := nextTick.Sub(now)
+		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, nextTick.Format(time.RFC3339))
+
+		time.Sleep(sleepDuration)
 	}
 }
