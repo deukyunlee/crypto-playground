@@ -37,6 +37,18 @@ func main() {
 	log.Printf("[INITIAL] [%v] hour, minute: %v, %v\n", time.Now().Format(time.RFC3339), hour, minute)
 
 	now := time.Now()
+
+	minute += 1
+
+	if minute >= 60 {
+		minute = 0
+		hour += 1
+	}
+
+	if hour >= 24 {
+		hour = 0
+	}
+
 	initialTick := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
 	if initialTick.Before(now) {
 		initialTick = initialTick.Add(24 * time.Hour)
