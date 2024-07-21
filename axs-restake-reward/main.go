@@ -60,7 +60,6 @@ func main() {
 
 		log.Printf("[CURRENT] [%v] hour: %v, minute: %v\n", time.Now().Format(time.RFC3339), hour, minute)
 
-		time.Sleep(123123123)
 		core.RestakeRewards()
 
 		// Calculate the duration to sleep until the next minute
