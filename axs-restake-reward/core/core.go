@@ -23,9 +23,9 @@ func RestakeRewards() {
 	chainId := v.GetInt64("chainId")
 	gasLimit := v.GetUint64("gasLimit")
 	accountAddressStr := v.GetString("accountAddress")
+	PK := v.GetString("pk")
 
 	accountAddress := common.HexToAddress(accountAddressStr)
-	PK := v.GetString("pk")
 
 	ethCli, ctx := ethClient.GetEthClient()
 
@@ -35,7 +35,7 @@ func RestakeRewards() {
 
 	contract := bind.NewBoundContract(contractAddress, parsedABI, ethCli, ethCli, ethCli)
 
-	nonce, err := ethCli.PendingNonceAt(ctx, accountAddress)
+	nonce, err := GetPendingNonceWithRetry(ctx, ethCli, accountAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,12 +53,12 @@ func RestakeRewards() {
 		To:   &contractAddress,
 		Data: common.FromHex(EstimateGasSelector),
 	}
-	gas, err := ethCli.EstimateGas(ctx, msg)
+	gas, err := EstimateGasWithRetry(ctx, ethCli, msg)
+
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-
 	log.Printf("gas: %d\n", gas)
 
 	// Create the transaction
@@ -108,7 +108,6 @@ func RestakeRewards() {
 const (
 	ContractAddress          = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
 	RestakeRewardsMethodName = "restakeRewards"
-	EstimateGasSelector      = "0x3d8527ba"
 )
 
 func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {
