@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 	"github.com/deukyunlee/crypto-playground/core"
+	"github.com/deukyunlee/crypto-playground/util"
 	"log"
 	"os"
 	"time"
 )
 
 func main() {
+
 	stakeLogPath := "./logs/staking_logs.log"
 
 	// Setup logging
@@ -31,10 +33,10 @@ func main() {
 
 	for {
 		now := time.Now()
-		hour, minute = incrementTime(hour, minute)
+		hour, minute = util.IncrementTime(hour, minute)
 		log.Printf("[CURRENT] [%v] hour: %v, minute: %v\n", now.Format(time.RFC3339), hour, minute)
 
-		nextTick := calculateNextTick(now, hour, minute)
+		nextTick := util.CalculateNextTick(now, hour, minute)
 		sleepDuration := nextTick.Sub(now)
 		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, nextTick.Format(time.RFC3339))
 
@@ -48,24 +50,4 @@ func closeLogFile(logFile *os.File) {
 	if err := logFile.Close(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func calculateNextTick(now time.Time, hour, minute int) time.Time {
-	nextTick := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, now.Location())
-	if nextTick.Before(now) {
-		nextTick = nextTick.Add(24 * time.Hour)
-	}
-	return nextTick
-}
-
-func incrementTime(hour, minute int) (int, int) {
-	minute += 1
-	if minute >= 60 {
-		minute = 0
-		hour += 1
-	}
-	if hour >= 24 {
-		hour = 0
-	}
-	return hour, minute
 }

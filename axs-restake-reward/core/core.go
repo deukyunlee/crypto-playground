@@ -104,7 +104,6 @@ func RestakeRewards() {
 	}
 }
 
-// Configurations from config package
 const (
 	ContractAddress          = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
 	RestakeRewardsMethodName = "restakeRewards"
