@@ -24,4 +24,4 @@ go.work.sum
 */logs/
 */config/
 /.idea/
-./axs-restake-reward/crypto-playground
+/axs-restake-reward/crypto-playground
