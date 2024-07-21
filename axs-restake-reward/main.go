@@ -35,6 +35,8 @@ func main() {
 	minute := *minutePtr
 	telegramStatus := *telegramStatusPtr
 
+	log.Printf("[FLAG] hour: %d, minute: %d, telegramStatus: %t", hour, minute, telegramStatus)
+
 	for {
 		now := time.Now()
 		hour, minute = util.IncrementTime(hour, minute)
@@ -55,7 +57,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			message := fmt.Sprintf("*[Next: %s]*\ncurrentBalance:%s\nstakingAmount:%s\n", time.Now().Format(time.RFC3339), balance, stakingAmount)
+			message := fmt.Sprintf("*[Next: %s]*\n*balance*:%s\n*stakingAmount*:%s\n", time.Now().Format(time.RFC3339), balance, stakingAmount)
 			external.SendTelegramRestakeMessage(message)
 		}
 
