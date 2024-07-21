@@ -29,23 +29,8 @@ func main() {
 	hour := *hourPtr
 	minute := *minutePtr
 
-	log.Printf("[INITIAL] [%v] hour, minute: %v, %v\n", time.Now().Format(time.RFC3339), hour, minute)
-
-	now := time.Now()
-
-	hour, minute = incrementTime(hour, minute)
-
-	initialTick := calculateNextTick(now, hour, minute)
-
-	initialSleepDuration := initialTick.Sub(now)
-
-	log.Printf("Sleeping for %s until the first execution at %s\n", initialSleepDuration, initialTick.Format(time.RFC3339))
-
-	time.Sleep(initialSleepDuration)
 	for {
-		core.RestakeRewards()
-
-		now = time.Now()
+		now := time.Now()
 		hour, minute = incrementTime(hour, minute)
 		log.Printf("[CURRENT] [%v] hour: %v, minute: %v\n", now.Format(time.RFC3339), hour, minute)
 
@@ -54,6 +39,8 @@ func main() {
 		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, nextTick.Format(time.RFC3339))
 
 		time.Sleep(sleepDuration)
+
+		core.RestakeRewards()
 	}
 }
 
