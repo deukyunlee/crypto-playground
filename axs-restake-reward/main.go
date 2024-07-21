@@ -57,7 +57,7 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			message := fmt.Sprintf("*[Next: %s]*\n*balance*:%s\n*stakingAmount*:%s\n", time.Now().Format(time.RFC3339), balance, stakingAmount)
+			message := fmt.Sprintf("*[Next: %s]*\n*balance*: %s\n*stakingAmount*: %s\n", nextTick.Format(time.RFC3339), balance, stakingAmount)
 			external.SendTelegramRestakeMessage(message)
 		}
 
