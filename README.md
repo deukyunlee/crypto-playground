@@ -18,21 +18,26 @@ in order to restake your AXS rewards automatically every day,
 
 4. When running the program, you need to specify the time and minutes for the initial restaking. 
 - Since AXS prevents restaking for 24 hours, it is necessary to know the previous restaking time to ensure the automated restaking occurs correctly.
-- To handle this, provide the time as a flag value when you first run the program. The program will use this time to schedule automatic restaking, occurring every 24 hours plus 1 minute from the specified time.
+- To handle this, provide the time in RFC3339 format as a flag value when you first run the program. The program will use this time to schedule automatic restaking, which will occur every 24 hours and 1 minute from the specified time.
 
-e.g. Suppose you have restaked your reward 02:00 AM yesterday.
+e.g. Suppose you have restaked your reward at 2024-07-20T22:58:16+09:00.
 
 ```
-./crypto-playground -hour=2 -minute=0
+./crypto-playground -time=2024-07-20T22:58:16+09:00
 ```
 
-In this example, the program will schedule the first restaking for 02:01 AM and then automatically restake every 24 hours plus 1 minute thereafter.
+In this example, the program will execute the initial restaking based on the previous restaking time:
+
+- If 24 hours have passed since the last restaking, perform an immediate restaking.
+- If not, wait until 24 hours have passed since the last restaking.
+
+Thereafter, the program will automatically restake every 24 hours and 1 minute.
 
 5. (Optional) You can send Telegram Notification
-- If you set flag "telegram" to true, you can use telegram notification
+- If you set flag "telegram" to true, you can get telegram notification
 
 ```
-./crypto-playground -hour=2 -minute=0 -telegram=true
+./crypto-playground -time=2024-07-20T22:58:16+09:00 -telegram=true
 ```
 - Also, you need to add telegram configurations, in /config/axs_staking_info.yml
     - telegramToken
