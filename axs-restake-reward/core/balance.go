@@ -49,7 +49,7 @@ func GetBalance(ctx context.Context) (*big.Float, error) {
 	return balanceAmountInEther, nil
 }
 
-func GetStakingAmount(ctx context.Context) (*big.Float, error) {
+func GetStakingAmount() (*big.Float, error) {
 	v := util.GetViper()
 
 	accountAddressStr := v.GetString("accountAddress")

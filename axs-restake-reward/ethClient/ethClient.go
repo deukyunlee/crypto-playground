@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
+	"log"
 	"net/http"
 	"time"
 )
@@ -23,6 +24,7 @@ func (t *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func GetEthClient() (*ethclient.Client, context.Context) {
+
 	//headers := map[string][]string{
 	//	"Content-Type": {"application/json"},
 	//	"User-Agent":   {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"},
@@ -41,14 +43,14 @@ func GetEthClient() (*ethclient.Client, context.Context) {
 		Transport: transport,
 		//headers:   headers,
 	}
-
 	ctx := context.Background()
 
-	client, err := rpc.DialHTTPWithClient("https://api.roninchain.com/rpc", httpClient)
+	client, err := rpc.DialOptions(ctx, "https://api.roninchain.com/rpc", rpc.WithHTTPClient(httpClient))
+
 	if err != nil {
-		panic(err)
+		log.Printf("err: %s\n", err)
+		return nil, ctx
 	}
-	defer client.Close()
 
 	ethClient := ethclient.NewClient(client)
 	return ethClient, ctx

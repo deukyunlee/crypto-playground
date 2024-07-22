@@ -18,13 +18,14 @@ func GetPendingNonceWithRetry(ctx context.Context, ethCli *ethclient.Client, acc
 	for i := 0; i < PendingNonceMaxRetryCount; i++ {
 		nonce, err = ethCli.PendingNonceAt(ctx, accountAddress)
 		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("EstimateGas failed (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
+			log.Printf("Failed to get Pending nonce (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
 
-		// Delay before retrying
-		time.Sleep(PendingNonceRetryDelay)
+			// Delay before retrying
+			time.Sleep(PendingNonceRetryDelay)
+		} else {
+			return nonce, nil
+		}
 	}
 
-	return 0, err
+	return 0, nil
 }

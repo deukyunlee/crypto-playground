@@ -18,14 +18,15 @@ func EstimateGasWithRetry(ctx context.Context, ethCli *ethclient.Client, msg eth
 
 	for i := 0; i < EstimateGasMaxRetryCount; i++ {
 		gas, err = ethCli.EstimateGas(ctx, msg)
-		if err == nil {
+		if err != nil {
+
+			log.Printf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
+
+			// Delay before retrying
+			time.Sleep(EstimateGasRetryDelay)
+		} else {
 			return gas, nil // Success
 		}
-
-		log.Printf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
-
-		// Delay before retrying
-		time.Sleep(EstimateGasRetryDelay)
 	}
 
 	return 0, err

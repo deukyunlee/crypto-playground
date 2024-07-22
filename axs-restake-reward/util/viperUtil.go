@@ -9,10 +9,10 @@ func GetViper() *viper.Viper {
 	v := viper.New()
 	v.SetConfigName("axs_staking_info")
 	v.SetConfigType("yaml")
-	v.AddConfigPath("./config")
+	v.AddConfigPath("config")
 
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("Error reading config file, %s", err)
+		log.Printf("Error reading config file, %s", err)
 	}
 
 	return v

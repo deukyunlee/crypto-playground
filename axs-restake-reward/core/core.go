@@ -41,7 +41,7 @@ func RestakeRewards() {
 
 	nonce, err := GetPendingNonceWithRetry(ctx, ethCli, accountAddress)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("err: %s", err)
 	}
 	log.Printf("Nonce: %d\n", nonce)
 
@@ -49,7 +49,7 @@ func RestakeRewards() {
 
 	gasPrice, err := ethCli.SuggestGasPrice(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("err: %s", err)
 	}
 
 	msg := ethereum.CallMsg{
@@ -60,7 +60,7 @@ func RestakeRewards() {
 	gas, err := EstimateGasWithRetry(ctx, ethCli, msg)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("err: %s", err)
 		return
 	}
 	log.Printf("gas: %d\n", gas)
@@ -81,7 +81,7 @@ func RestakeRewards() {
 		},
 	}, RestakeRewardsMethodName)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("err: %s", err)
 	}
 
 	txHash := tx.Hash()
@@ -115,7 +115,7 @@ func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash
 			log.Printf("Transaction %s not found.\n", txHash.Hex())
 			return nil
 		}
-		log.Fatal(err)
+		log.Printf("err: %s", err)
 	}
 	return receipt
 }

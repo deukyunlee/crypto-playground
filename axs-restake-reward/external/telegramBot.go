@@ -8,7 +8,6 @@ import (
 )
 
 func SendTelegramRestakeMessage(message string) {
-	// TODO: 20:00
 	v := util.GetViper()
 
 	telegramBotToken := v.GetString("telegramToken")
