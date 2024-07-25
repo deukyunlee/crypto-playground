@@ -2,6 +2,8 @@ package util
 
 import "time"
 
+var NextTick time.Time
+
 func IncrementTime(prevTime time.Time, duration time.Duration) time.Time {
 	return prevTime.Add(duration)
 }

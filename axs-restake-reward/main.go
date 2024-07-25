@@ -1,13 +1,15 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/deukyunlee/crypto-playground/core"
 	"github.com/deukyunlee/crypto-playground/external"
 	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/mymmrac/telego"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -35,6 +37,18 @@ func main() {
 
 	log.Printf("[FLAG] hour: %s, telegramStatus: %t", prevTimeStr, telegramStatus)
 
+	if telegramStatus {
+		v := util.GetViper()
+
+		http.HandleFunc("/webhook", webhookHandler(v.GetString("telegramToken"), v.GetString("webHookUrl")))
+		go func() {
+			err := http.ListenAndServe(":8080", nil)
+			if err != nil {
+				log.Printf("err: %s", err)
+			}
+		}()
+	}
+
 	for {
 		now := time.Now()
 		prevTime, err := time.Parse(time.RFC3339, prevTimeStr)
@@ -47,25 +61,24 @@ func main() {
 
 		log.Printf("[CURRENT] [%v]\n", now.Format(time.RFC3339))
 
-		nextTick := util.CalculateNextTick(now, incrementedTime)
-		sleepDuration := nextTick.Sub(now)
-		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, nextTick.Format(time.RFC3339))
+		util.NextTick = util.CalculateNextTick(now, incrementedTime)
+		sleepDuration := util.NextTick.Sub(now)
+		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, util.NextTick.Format(time.RFC3339))
 
 		if telegramStatus {
-			ctx := context.Background()
 			stakingAmount, err := core.GetStakingAmount()
 			if err != nil {
 				log.Printf("err: %s", err)
 			}
 
-			balance, err := core.GetBalance(ctx)
+			balance, err := core.GetBalance()
 			if err != nil {
 				log.Printf("err: %s", err)
 			}
 
 			//Formats balance and stakingAmount to 3 decimal places
 			message := fmt.Sprintf("*[Next: %s]*\n*balance*: %s\n*stakingAmount*: %s\n",
-				nextTick.Format(time.RFC3339),
+				util.NextTick.Format(time.RFC3339),
 				balance.Text('f', 3),
 				stakingAmount.Text('f', 3),
 			)
@@ -84,5 +97,69 @@ func main() {
 func closeLogFile(logFile *os.File) {
 	if err := logFile.Close(); err != nil {
 		log.Printf("err: %s", err)
+	}
+}
+
+func webhookHandler(telegramBotToken, webHookUrl string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		telegramBot, err := telego.NewBot(telegramBotToken)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = telegramBot.SetWebhook(&telego.SetWebhookParams{
+			URL: webHookUrl,
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		if r.Method != http.MethodPost {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var update telego.Update
+		if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+			http.Error(w, "Failed to decode update", http.StatusBadRequest)
+			return
+		}
+
+		if update.Message != nil {
+			// 메시지 처리
+			fmt.Printf("Received message from %s: %s\n", update.Message.From.Username, update.Message.Text)
+
+			message := ""
+
+			switch update.Message.Text {
+			case "staking":
+				stakingAmount, err := core.GetStakingAmount()
+				if err != nil {
+					log.Printf("err: %s", err)
+				}
+				message = fmt.Sprintf("stakingAmount: %s", stakingAmount.Text('f', 3))
+			case "tick":
+				message = fmt.Sprintf("nextTick: %s", util.NextTick)
+				break
+			case "balance":
+				balance, err := core.GetBalance()
+				if err != nil {
+					log.Printf("err: %s", err)
+				}
+				message = fmt.Sprintf("balance: %s", balance.Text('f', 3))
+				break
+			default:
+				return
+			}
+			// 수신한 메시지에 응답 (옵션)
+			_, err := telegramBot.SendMessage(&telego.SendMessageParams{
+				ChatID: update.Message.Chat.ChatID(),
+				Text:   message,
+			})
+			if err != nil {
+				log.Println("Failed to send message:", err)
+			}
+		}
 	}
 }
