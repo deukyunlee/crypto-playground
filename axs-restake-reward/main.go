@@ -141,16 +141,16 @@ func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 				if err != nil {
 					log.Printf("err: %s", err)
 				}
-				message = fmt.Sprintf("stakingAmount: %s", stakingAmount.Text('f', 3))
+				message = fmt.Sprintf("*stakingAmount*: %s", stakingAmount.Text('f', 3))
 			case "tick":
-				message = fmt.Sprintf("nextTick: %s", util.NextTick)
+				message = fmt.Sprintf("*nextTick*: %s\n %s left", util.NextTick, util.NextTick.Sub(time.Now()))
 				break
 			case "balance":
 				balance, err := core.GetBalance()
 				if err != nil {
 					log.Printf("err: %s", err)
 				}
-				message = fmt.Sprintf("balance: %s", balance.Text('f', 3))
+				message = fmt.Sprintf("*balance*: %s", balance.Text('f', 3))
 				break
 			default:
 				return
