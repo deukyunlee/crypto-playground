@@ -157,8 +157,9 @@ func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 			}
 			// 수신한 메시지에 응답 (옵션)
 			_, err := telegramBot.SendMessage(&telego.SendMessageParams{
-				ChatID: update.Message.Chat.ChatID(),
-				Text:   message,
+				ChatID:    update.Message.Chat.ChatID(),
+				Text:      message,
+				ParseMode: "markdown",
 			})
 			if err != nil {
 				log.Println("Failed to send message:", err)
