@@ -40,7 +40,22 @@ func main() {
 	if telegramStatus {
 		v := util.GetViper()
 
-		http.HandleFunc("/webhook", webhookHandler(v.GetString("telegramToken"), v.GetString("webHookUrl")))
+		telegramToken := v.GetString("telegramToken")
+		webHookUrl := v.GetString("webHookUrl")
+
+		telegramBot, err := telego.NewBot(telegramToken)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = telegramBot.SetWebhook(&telego.SetWebhookParams{
+			URL: webHookUrl,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.HandleFunc("/webhook", webhookHandler(telegramBot))
 		go func() {
 			err := http.ListenAndServe(":8080", nil)
 			if err != nil {
@@ -100,21 +115,9 @@ func closeLogFile(logFile *os.File) {
 	}
 }
 
-func webhookHandler(telegramBotToken, webHookUrl string) http.HandlerFunc {
+func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		telegramBot, err := telego.NewBot(telegramBotToken)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = telegramBot.SetWebhook(&telego.SetWebhookParams{
-			URL: webHookUrl,
-		})
-
-		if err != nil {
-			log.Fatal(err)
-		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
