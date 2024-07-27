@@ -9,6 +9,7 @@ import (
 	"github.com/deukyunlee/crypto-playground/util"
 	"github.com/mymmrac/telego"
 	"log"
+	"math/big"
 	"net/http"
 	"os"
 	"time"
@@ -92,7 +93,7 @@ func main() {
 			}
 
 			//Formats balance and stakingAmount to 3 decimal places
-			message := fmt.Sprintf("*[Next: %s]*\n*balance*: %s\n*stakingAmount*: %s\n",
+			message := fmt.Sprintf("*[Next Restaking Time: %s]*\n*[Current Balance]*: %s\n*[Current Staking Amount]*: %s\n",
 				util.NextTick.Format(time.RFC3339),
 				balance.Text('f', 3),
 				stakingAmount.Text('f', 3),
@@ -141,21 +142,47 @@ func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 				if err != nil {
 					log.Printf("err: %s", err)
 				}
-				message = fmt.Sprintf("*stakingAmount*: %s", stakingAmount.Text('f', 3))
+				message = fmt.Sprintf("*[Current Staking Amount]*: %s", stakingAmount.Text('f', 3))
 			case "tick":
-				message = fmt.Sprintf("*nextTick*: %s\n %s left", util.NextTick, util.NextTick.Sub(time.Now()))
+				message = fmt.Sprintf("*[Next Restaking Time]*: %s\n %s left", util.NextTick, util.NextTick.Sub(time.Now()))
 				break
 			case "balance":
 				balance, err := core.GetBalance()
 				if err != nil {
 					log.Printf("err: %s", err)
 				}
-				message = fmt.Sprintf("*balance*: %s", balance.Text('f', 3))
+				message = fmt.Sprintf("*[Current Balance]*: %s", balance.Text('f', 3))
 				break
+			case "reward":
+				stakingAmount, err := core.GetStakingAmount()
+				if err != nil {
+					log.Printf("err: %s", err)
+				}
+				totalStaked, err := core.GetTotalStaked()
+				if err != nil {
+					log.Printf("err: %s", err)
+				}
+
+				unlockSchedule := big.NewFloat(1566000)
+
+				now := time.Now()
+
+				currentYear, currentMonth, _ := now.Date()
+
+				firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC)
+				firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
+				daysInMonth := big.NewFloat(firstOfNextMonth.Sub(firstOfMonth).Hours() / 24)
+
+				monthlyTotalReward := new(big.Float).Quo(unlockSchedule, totalStaked)
+
+				userMonthlyReward := monthlyTotalReward.Mul(monthlyTotalReward, stakingAmount)
+
+				userDailyReward := userMonthlyReward.Quo(userMonthlyReward, daysInMonth)
+				message = fmt.Sprintf("*[Estimated Daily Reward]*: %s", userDailyReward.Text('f', 3))
 			default:
 				return
 			}
-			// 수신한 메시지에 응답 (옵션)
+
 			_, err := telegramBot.SendMessage(&telego.SendMessageParams{
 				ChatID:    update.Message.Chat.ChatID(),
 				Text:      message,
