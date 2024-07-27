@@ -73,13 +73,11 @@ func main() {
 			return
 		}
 
-		incrementedTime := util.IncrementTime(prevTime, 1*time.Minute)
-
 		log.Printf("[CURRENT] [%v]\n", now.Format(time.RFC3339))
 
-		util.NextTick = util.CalculateNextTick(now, incrementedTime)
-		sleepDuration := util.NextTick.Sub(now)
-		log.Printf("Sleeping for %s until the next tick at %s\n", sleepDuration, util.NextTick.Format(time.RFC3339))
+		util.NextTick, util.Duration = util.CalculateNextTick(now, prevTime)
+
+		log.Printf("Sleeping for %s until the next tick at %s\n", util.Duration, util.NextTick.Format(time.RFC3339))
 
 		if telegramStatus {
 			stakingAmount, err := core.GetStakingAmount()
@@ -102,7 +100,7 @@ func main() {
 			external.SendTelegramRestakeMessage(message)
 		}
 
-		time.Sleep(sleepDuration)
+		time.Sleep(util.Duration)
 
 		core.RestakeRewards()
 
