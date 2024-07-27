@@ -48,17 +48,14 @@ func GetStakingAmount() (*big.Float, error) {
 }
 
 func GetTotalStaked() (*big.Float, error) {
-	v := util.GetViper()
 
-	accountAddressStr := v.GetString("accountAddress")
-	accountAddress := common.HexToAddress(accountAddressStr)
 	contractAddress := common.HexToAddress(StakingContractAddress)
 
 	ethCli, ctx := ethClient.GetEthClient()
 
 	parsedABI := util.ParseAbi("abi/axs_staking_abi.json")
 
-	data, err := parsedABI.Pack("getStakingTotal", accountAddress)
+	data, err := parsedABI.Pack("getStakingTotal")
 	if err != nil {
 		return nil, err
 	}

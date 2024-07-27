@@ -191,6 +191,41 @@ func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 			if err != nil {
 				log.Println("Failed to send message:", err)
 			}
+
+			stakingButton := telego.InlineKeyboardButton{
+				Text:         "Current Staking Amount",
+				CallbackData: "staking",
+			}
+
+			tickButton := telego.InlineKeyboardButton{
+				Text:         "Next Tick",
+				CallbackData: "tick",
+			}
+
+			balanceButton := telego.InlineKeyboardButton{
+				Text:         "Current Balance",
+				CallbackData: "balance",
+			}
+
+			rewardButton := telego.InlineKeyboardButton{
+				Text:         "Current Estimated Daily Reward",
+				CallbackData: "reward",
+			}
+			inlineKeyboard := telego.InlineKeyboardMarkup{
+				InlineKeyboard: [][]telego.InlineKeyboardButton{
+					{stakingButton, tickButton, balanceButton, rewardButton},
+				},
+			}
+
+			_, err = telegramBot.SendMessage(&telego.SendMessageParams{
+				ChatID:      update.Message.Chat.ChatID(),
+				Text:        message,
+				ParseMode:   "markdown",
+				ReplyMarkup: &inlineKeyboard,
+			})
+			if err != nil {
+				log.Fatalf("Failed to send message: %s", err)
+			}
 		}
 	}
 }
