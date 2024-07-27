@@ -197,10 +197,10 @@ func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	inlineKeyboard := telego.InlineKeyboardMarkup{
 		InlineKeyboard: [][]telego.InlineKeyboardButton{
 			{
-				{Text: "Current Staking Amount", CallbackData: "staking"},
-				{Text: "Next Tick", CallbackData: "tick"},
-				{Text: "Current Balance", CallbackData: "balance"},
-				{Text: "Current Estimated Daily Reward", CallbackData: "reward"},
+				{Text: "Staking", CallbackData: "staking"},
+				{Text: "Tick", CallbackData: "tick"},
+				{Text: "Balance", CallbackData: "balance"},
+				{Text: "Reward", CallbackData: "reward"},
 			},
 		},
 	}
