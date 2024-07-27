@@ -22,18 +22,8 @@ To automatically restake your AXS rewards every day:
 - `accountAddress: {your account address starting with 0x}`
 - `pk: {your private key starting with 0x}`
 
-4. When running the program, you need to specify the time and minutes for the initial restaking. 
-- Since AXS prevents restaking for 24 hours, it is necessary to know the previous restaking time to ensure the automated restaking occurs correctly.
-- To handle this, provide the time in RFC3339 format as a flag value when you first run the program. The program will use this time to schedule automatic restaking, which will occur every 24 hours and 1 minute from the specified time.
-
-Example: Suppose you have restaked your reward at 2024-07-20T22:58:16+09:00.
-
-```
-./crypto-playground -time=2024-07-20T22:58:16+09:00
-```
-
-In this example, the program will execute the initial restaking based on the previous restaking time:
-
+4. This program automatically tracks your previous restaking time and restakes 24 hours afterward.
+- AXS allows you to restake every 24hours.
 - If 24 hours have passed since the last restaking, perform an immediate restaking.
 - If not, wait until 24 hours have passed since the last restaking.
 
