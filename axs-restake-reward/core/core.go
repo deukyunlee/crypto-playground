@@ -21,7 +21,7 @@ const (
 	RestakeRewardsMethodName = "restakeRewards"
 )
 
-func RestakeRewards() {
+func RestakeRewards() string {
 	v := util.GetViper()
 
 	chainId := v.GetInt64("chainId")
@@ -61,7 +61,7 @@ func RestakeRewards() {
 
 	if err != nil {
 		log.Printf("err: %s", err)
-		return
+		return ""
 	}
 	log.Printf("gas: %d\n", gas)
 
@@ -106,6 +106,8 @@ func RestakeRewards() {
 		}
 		log.Println(finalReceipt)
 	}
+
+	return txHash.Hex()
 }
 
 func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {

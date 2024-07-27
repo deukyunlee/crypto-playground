@@ -38,6 +38,10 @@ func main() {
 
 	log.Printf("[FLAG] hour: %s, telegramStatus: %t", prevTimeStr, telegramStatus)
 
+	var latestTxHash = ""
+
+	const roninExplorerUri = "https://explorer.roninchain.com"
+
 	if telegramStatus {
 		v := util.GetViper()
 
@@ -91,10 +95,11 @@ func main() {
 			}
 
 			//Formats balance and stakingAmount to 3 decimal places
-			message := fmt.Sprintf("*[Next Restaking Time: %s]*\n*[Current Balance]*: %s\n*[Current Staking Amount]*: %s\n",
+			message := fmt.Sprintf("*[Next Restaking Time: %s]*\n*[Current Balance]*: %s\n*[Current Staking Amount]*: %s\n*[Latest Transaction Hash]*: %s [%s]\n",
 				util.NextTick.Format(time.RFC3339),
 				balance.Text('f', 3),
 				stakingAmount.Text('f', 3),
+				latestTxHash, roninExplorerUri+"/tx/"+latestTxHash,
 			)
 
 			external.SendTelegramRestakeMessage(message)
@@ -102,7 +107,7 @@ func main() {
 
 		time.Sleep(util.Duration)
 
-		core.RestakeRewards()
+		latestTxHash = core.RestakeRewards()
 
 		prevTimeStr = now.Format(time.RFC3339)
 	}
