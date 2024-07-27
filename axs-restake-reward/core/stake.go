@@ -9,6 +9,14 @@ import (
 	"math/big"
 )
 
+type UserRewardResult struct {
+	DebitedRewards   *big.Int
+	CreditedRewards  *big.Int
+	LastClaimedBlock *big.Int
+}
+
+const StakingManagerContract = "0x8bd81a19420bad681b7bfc20e703ebd8e253782d"
+
 func GetStakingAmount() (*big.Float, error) {
 	v := util.GetViper()
 
@@ -80,4 +88,39 @@ func GetTotalStaked() (*big.Float, error) {
 	stakingAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(stakingAmount), weiPerEther)
 
 	return stakingAmountInEther, nil
+}
+
+func GetUserRewardInfo() (UserRewardResult, error) {
+	v := util.GetViper()
+
+	var userReward UserRewardResult
+	accountAddressStr := v.GetString("accountAddress")
+	stakingManagerContractAddress := common.HexToAddress(StakingManagerContract)
+	stakingContractAddress := common.HexToAddress(StakingContractAddress)
+	accountAddress := common.HexToAddress(accountAddressStr)
+
+	ethCli, ctx := ethClient.GetEthClient()
+
+	parsedABI := util.ParseAbi("abi/staking_manager_abi.json")
+
+	data, err := parsedABI.Pack("userRewardInfo", stakingContractAddress, accountAddress)
+	if err != nil {
+		return userReward, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &stakingManagerContractAddress,
+		Data: data,
+	}
+
+	output, err := ethCli.CallContract(ctx, callMsg, nil)
+	if err != nil {
+		return userReward, err
+	}
+
+	err = parsedABI.UnpackIntoInterface(&userReward, "userRewardInfo", output)
+	if err != nil {
+		fmt.Println("Error unpacking output:", err)
+	}
+
+	return userReward, nil
 }
