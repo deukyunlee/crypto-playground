@@ -118,7 +118,6 @@ func closeLogFile(logFile *os.File) {
 
 func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		if r.Method != http.MethodPost {
 			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 			return
@@ -131,101 +130,115 @@ func webhookHandler(telegramBot *telego.Bot) http.HandlerFunc {
 		}
 
 		if update.Message != nil {
-			// 메시지 처리
-			fmt.Printf("Received message from %s: %s\n", update.Message.From.Username, update.Message.Text)
-
-			message := ""
-
-			switch update.Message.Text {
-			case "staking":
-				stakingAmount, err := core.GetStakingAmount()
-				if err != nil {
-					log.Printf("err: %s", err)
-				}
-				message = fmt.Sprintf("*[Current Staking Amount]*: %s", stakingAmount.Text('f', 3))
-			case "tick":
-				message = fmt.Sprintf("*[Next Restaking Time]*: %s\n %s left", util.NextTick, util.NextTick.Sub(time.Now()))
-				break
-			case "balance":
-				balance, err := core.GetBalance()
-				if err != nil {
-					log.Printf("err: %s", err)
-				}
-				message = fmt.Sprintf("*[Current Balance]*: %s", balance.Text('f', 3))
-				break
-			case "reward":
-				stakingAmount, err := core.GetStakingAmount()
-				if err != nil {
-					log.Printf("err: %s", err)
-				}
-				totalStaked, err := core.GetTotalStaked()
-				if err != nil {
-					log.Printf("err: %s", err)
-				}
-
-				unlockSchedule := big.NewFloat(1566000)
-
-				now := time.Now()
-
-				currentYear, currentMonth, _ := now.Date()
-
-				firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC)
-				firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
-				daysInMonth := big.NewFloat(firstOfNextMonth.Sub(firstOfMonth).Hours() / 24)
-
-				monthlyTotalReward := new(big.Float).Quo(unlockSchedule, totalStaked)
-
-				userMonthlyReward := monthlyTotalReward.Mul(monthlyTotalReward, stakingAmount)
-
-				userDailyReward := userMonthlyReward.Quo(userMonthlyReward, daysInMonth)
-				message = fmt.Sprintf("*[Estimated Daily Reward]*: %s", userDailyReward.Text('f', 3))
-			default:
-				return
-			}
-
-			_, err := telegramBot.SendMessage(&telego.SendMessageParams{
-				ChatID:    update.Message.Chat.ChatID(),
-				Text:      message,
-				ParseMode: "markdown",
-			})
-			if err != nil {
-				log.Println("Failed to send message:", err)
-			}
-
-			stakingButton := telego.InlineKeyboardButton{
-				Text:         "Current Staking Amount",
-				CallbackData: "staking",
-			}
-
-			tickButton := telego.InlineKeyboardButton{
-				Text:         "Next Tick",
-				CallbackData: "tick",
-			}
-
-			balanceButton := telego.InlineKeyboardButton{
-				Text:         "Current Balance",
-				CallbackData: "balance",
-			}
-
-			rewardButton := telego.InlineKeyboardButton{
-				Text:         "Current Estimated Daily Reward",
-				CallbackData: "reward",
-			}
-			inlineKeyboard := telego.InlineKeyboardMarkup{
-				InlineKeyboard: [][]telego.InlineKeyboardButton{
-					{stakingButton, tickButton, balanceButton, rewardButton},
-				},
-			}
-
-			_, err = telegramBot.SendMessage(&telego.SendMessageParams{
-				ChatID:      update.Message.Chat.ChatID(),
-				Text:        message,
-				ParseMode:   "markdown",
-				ReplyMarkup: &inlineKeyboard,
-			})
-			if err != nil {
-				log.Fatalf("Failed to send message: %s", err)
-			}
+			handleMessage(telegramBot, update.Message)
+		} else if update.CallbackQuery != nil {
+			handleCallbackQuery(telegramBot, update.CallbackQuery)
 		}
+	}
+}
+
+func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
+	log.Printf("Received message from %s: %s\n", message.From.Username, message.Text)
+
+	reply := ""
+
+	switch message.Text {
+	case "staking":
+		stakingAmount, err := core.GetStakingAmount()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+		reply = fmt.Sprintf("*[Current Staking Amount]*: %s", stakingAmount.Text('f', 3))
+	case "tick":
+		reply = fmt.Sprintf("*[Next Restaking Time]*: %s\n %s left", util.NextTick, util.NextTick.Sub(time.Now()))
+	case "balance":
+		balance, err := core.GetBalance()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+		reply = fmt.Sprintf("*[Current Balance]*: %s", balance.Text('f', 3))
+	case "reward":
+		stakingAmount, err := core.GetStakingAmount()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+		totalStaked, err := core.GetTotalStaked()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+
+		unlockSchedule := big.NewFloat(1566000)
+
+		now := time.Now()
+		currentYear, currentMonth, _ := now.Date()
+		firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC)
+		firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
+		daysInMonth := big.NewFloat(firstOfNextMonth.Sub(firstOfMonth).Hours() / 24)
+
+		monthlyTotalReward := new(big.Float).Quo(unlockSchedule, totalStaked)
+		userMonthlyReward := new(big.Float).Mul(monthlyTotalReward, stakingAmount)
+		userDailyReward := new(big.Float).Quo(userMonthlyReward, daysInMonth)
+
+		reply = fmt.Sprintf("*[Estimated Daily Reward]*: %s", userDailyReward.Text('f', 3))
+	default:
+		return
+	}
+
+	_, err := telegramBot.SendMessage(&telego.SendMessageParams{
+		ChatID:    message.Chat.ChatID(),
+		Text:      reply,
+		ParseMode: "markdown",
+	})
+	if err != nil {
+		log.Println("Failed to send message:", err)
+	}
+
+	// Create inline keyboard
+	inlineKeyboard := telego.InlineKeyboardMarkup{
+		InlineKeyboard: [][]telego.InlineKeyboardButton{
+			{
+				{Text: "Current Staking Amount", CallbackData: "staking"},
+				{Text: "Next Tick", CallbackData: "tick"},
+				{Text: "Current Balance", CallbackData: "balance"},
+				{Text: "Current Estimated Daily Reward", CallbackData: "reward"},
+			},
+		},
+	}
+
+	_, err = telegramBot.SendMessage(&telego.SendMessageParams{
+		ChatID:      message.Chat.ChatID(),
+		Text:        "Choose an option:",
+		ParseMode:   "markdown",
+		ReplyMarkup: &inlineKeyboard,
+	})
+	if err != nil {
+		log.Fatalf("Failed to send message with inline keyboard: %s", err)
+	}
+}
+
+func handleCallbackQuery(telegramBot *telego.Bot, callbackQuery *telego.CallbackQuery) {
+	chat := callbackQuery.Message.GetChat()
+	chatID := chat.ChatID().ID
+
+	callbackData := callbackQuery.Data
+
+	update := telego.Update{
+		Message: &telego.Message{
+			Chat: telego.Chat{
+				ID: chatID,
+			},
+			From: &callbackQuery.From,
+			Text: callbackData,
+		},
+	}
+
+	handleMessage(telegramBot, update.Message)
+
+	err := telegramBot.AnswerCallbackQuery(&telego.AnswerCallbackQueryParams{
+		CallbackQueryID: callbackQuery.ID,
+		Text:            "Processing...",
+	})
+	if err != nil {
+		log.Printf("Failed to answer callback query: %s", err)
 	}
 }
