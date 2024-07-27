@@ -53,4 +53,4 @@ Thereafter, the program will automatically restake every 24 hours and 1 minute.
 ![image](https://github.com/user-attachments/assets/0ff800d9-6843-425c-b799-6d5d6160bd70)
 
 - You can interact with the bot using certain commands.
-  ![image-Photoroom (1)](https://github.com/user-attachments/assets/cc632789-fe60-4210-92ea-f2863552d11f)
+  ![image-Photoroom (2)](https://github.com/user-attachments/assets/17d80ca6-aca4-4381-93f7-a51638aeb3ec)
