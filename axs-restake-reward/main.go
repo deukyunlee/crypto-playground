@@ -123,7 +123,8 @@ func main() {
 
 		latestTxHash = core.RestakeRewards()
 
-		lastClaimedTime = now.UTC()
+		lastClaimedTimestampUnix = userRewardInfo.LastClaimedBlock.Int64()
+		lastClaimedTime = time.Unix(lastClaimedTimestampUnix, 0).UTC()
 	}
 }
 
