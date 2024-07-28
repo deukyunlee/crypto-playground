@@ -52,10 +52,10 @@ func main() {
 	const roninExplorerUri = "https://app.roninchain.com"
 
 	if telegramStatus {
-		v := util.GetViper()
+		configInfo := util.GetConfigInfo()
 
-		telegramToken := v.GetString("telegramToken")
-		webHookUrl := v.GetString("webHookUrl")
+		telegramToken := configInfo.Telegram.Token
+		webHookUrl := configInfo.Telegram.WebHookUrl
 
 		telegramBot, err := telego.NewBot(telegramToken)
 		if err != nil {

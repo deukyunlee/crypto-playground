@@ -8,11 +8,11 @@ import (
 )
 
 func SendTelegramRestakeMessage(message string) {
-	v := util.GetViper()
+	configInfo := util.GetConfigInfo()
 
-	telegramBotToken := v.GetString("telegramToken")
-	telegramChatId := v.GetInt64("telegramChatId")
-	telegramUserName := v.GetString("telegramUserName")
+	telegramBotToken := configInfo.Telegram.Token
+	telegramChatId := configInfo.Telegram.ChatID
+	telegramUserName := configInfo.Telegram.UserName
 
 	telegramBot, err := telego.NewBot(telegramBotToken)
 	if err != nil {

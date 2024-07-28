@@ -22,12 +22,12 @@ const (
 )
 
 func RestakeRewards() string {
-	v := util.GetViper()
+	configInfo := util.GetConfigInfo()
 
-	chainId := v.GetInt64("chainId")
-	gasLimit := v.GetUint64("gasLimit")
-	accountAddressStr := v.GetString("accountAddress")
-	PK := v.GetString("pk")
+	chainId := configInfo.ChainID
+	gasLimit := configInfo.GasLimit
+	accountAddressStr := configInfo.AccountAddress
+	PK := configInfo.PK
 
 	accountAddress := common.HexToAddress(accountAddressStr)
 

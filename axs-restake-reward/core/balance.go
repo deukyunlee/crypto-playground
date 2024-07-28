@@ -12,9 +12,9 @@ import (
 const axsContractAddress = "0x97a9107c1793bc407d6f527b77e7fff4d812bece"
 
 func GetBalance() (*big.Float, error) {
-	v := util.GetViper()
+	configInfo := util.GetConfigInfo()
 
-	accountAddressStr := v.GetString("accountAddress")
+	accountAddressStr := configInfo.AccountAddress
 	accountAddress := common.HexToAddress(accountAddressStr)
 	contractAddress := common.HexToAddress(axsContractAddress)
 

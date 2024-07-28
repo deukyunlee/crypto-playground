@@ -18,9 +18,9 @@ type UserRewardResult struct {
 const StakingManagerContract = "0x8bd81a19420bad681b7bfc20e703ebd8e253782d"
 
 func GetStakingAmount() (*big.Float, error) {
-	v := util.GetViper()
+	configInfo := util.GetConfigInfo()
 
-	accountAddressStr := v.GetString("accountAddress")
+	accountAddressStr := configInfo.AccountAddress
 	accountAddress := common.HexToAddress(accountAddressStr)
 	contractAddress := common.HexToAddress(StakingContractAddress)
 
@@ -91,10 +91,10 @@ func GetTotalStaked() (*big.Float, error) {
 }
 
 func GetUserRewardInfo() (UserRewardResult, error) {
-	v := util.GetViper()
+	configInfo := util.GetConfigInfo()
 
 	var userReward UserRewardResult
-	accountAddressStr := v.GetString("accountAddress")
+	accountAddressStr := configInfo.AccountAddress
 	stakingManagerContractAddress := common.HexToAddress(StakingManagerContract)
 	stakingContractAddress := common.HexToAddress(StakingContractAddress)
 	accountAddress := common.HexToAddress(accountAddressStr)
