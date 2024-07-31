@@ -123,6 +123,11 @@ func main() {
 
 		latestTxHash = core.RestakeRewards()
 
+		userRewardInfo, err := core.GetUserRewardInfo()
+		if err != nil {
+			log.Printf("err: %s", err)
+		}
+
 		lastClaimedTimestampUnix = userRewardInfo.LastClaimedBlock.Int64()
 		lastClaimedTime = time.Unix(lastClaimedTimestampUnix, 0).UTC()
 	}
