@@ -71,7 +71,7 @@ func main() {
 	lastClaimedTimestampUnix := userRewardInfo.LastClaimedBlock.Int64()
 	lastClaimedTime := time.Unix(lastClaimedTimestampUnix, 0).UTC()
 
-	logger.Info("lastClaimedTime: %s\n", lastClaimedTime.In(util.Location))
+	logger.Infof("lastClaimedTime: %s\n", lastClaimedTime.In(util.Location))
 
 	for {
 		now := time.Now().UTC()

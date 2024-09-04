@@ -47,7 +47,7 @@ func AutoCompoundRewards() string {
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}
-	logger.Info("Nonce: %d\n", nonce)
+	logger.Infof("Nonce: %d\n", nonce)
 
 	logger.Info("Restaking...")
 
@@ -67,7 +67,7 @@ func AutoCompoundRewards() string {
 		logger.Errorf("err: %s", err)
 		return ""
 	}
-	logger.Info("gas: %d\n", gas)
+	logger.Infof("gas: %d\n", gas)
 
 	// Create the transaction
 	tx, err := contract.Transact(&bind.TransactOpts{

@@ -60,7 +60,7 @@ func SendTelegramAutoCompoundMessage(message string) {
 		ParseMode: "markdown",
 	})
 	if err != nil {
-		logger.Error("Failed to send message:", err)
+		logger.Errorf("Failed to send message:", err)
 		os.Exit(1)
 	}
 
