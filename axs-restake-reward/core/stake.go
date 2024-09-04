@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"github.com/deukyunlee/crypto-playground/ethClient"
 	"github.com/deukyunlee/crypto-playground/util"
 	"github.com/ethereum/go-ethereum"
@@ -46,7 +45,7 @@ func GetStakingAmount() (*big.Float, error) {
 	var stakingAmount *big.Int
 	err = parsedABI.UnpackIntoInterface(&stakingAmount, "getStakingAmount", output)
 	if err != nil {
-		fmt.Println("Error unpacking output:", err)
+		logger.Errorf("Error unpacking output: %s", err)
 	}
 	weiPerEther := new(big.Float).SetFloat64(1e18)
 
@@ -81,7 +80,7 @@ func GetTotalStaked() (*big.Float, error) {
 	var stakingAmount *big.Int
 	err = parsedABI.UnpackIntoInterface(&stakingAmount, "getStakingTotal", output)
 	if err != nil {
-		fmt.Println("Error unpacking output:", err)
+		logger.Errorf("Error unpacking output: %s", err)
 	}
 	weiPerEther := new(big.Float).SetFloat64(1e18)
 
@@ -119,7 +118,7 @@ func GetUserRewardInfo() (UserRewardResult, error) {
 
 	err = parsedABI.UnpackIntoInterface(&userReward, "userRewardInfo", output)
 	if err != nil {
-		fmt.Println("Error unpacking output:", err)
+		logger.Errorf("Error unpacking output: %s", err)
 	}
 
 	return userReward, nil

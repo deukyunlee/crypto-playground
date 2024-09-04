@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"github.com/deukyunlee/crypto-playground/ethClient"
 	"github.com/deukyunlee/crypto-playground/util"
 	"github.com/ethereum/go-ethereum"
@@ -39,7 +38,7 @@ func GetBalance() (*big.Float, error) {
 	var balanceAmount *big.Int
 	err = parsedABI.UnpackIntoInterface(&balanceAmount, "balanceOf", output)
 	if err != nil {
-		fmt.Println("Error unpacking output:", err)
+		logger.Errorf("Error unpacking output: %s", err)
 	}
 	weiPerEther := new(big.Float).SetFloat64(1e18)
 

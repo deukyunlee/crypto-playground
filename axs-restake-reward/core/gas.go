@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"log"
 	"time"
 )
 
@@ -20,7 +19,7 @@ func EstimateGasWithRetry(ctx context.Context, ethCli *ethclient.Client, msg eth
 		gas, err = ethCli.EstimateGas(ctx, msg)
 		if err != nil {
 
-			log.Printf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
+			logger.Errorf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
 
 			// Delay before retrying
 			time.Sleep(EstimateGasRetryDelay)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"log"
 	"time"
 )
 
@@ -18,7 +17,7 @@ func GetPendingNonceWithRetry(ctx context.Context, ethCli *ethclient.Client, acc
 	for i := 0; i < PendingNonceMaxRetryCount; i++ {
 		nonce, err = ethCli.PendingNonceAt(ctx, accountAddress)
 		if err != nil {
-			log.Printf("Failed to get Pending nonce (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
+			logger.Errorf("Failed to get Pending nonce (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
 
 			// Delay before retrying
 			time.Sleep(PendingNonceRetryDelay)

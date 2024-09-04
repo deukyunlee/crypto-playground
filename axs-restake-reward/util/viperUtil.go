@@ -2,7 +2,6 @@ package util
 
 import (
 	"github.com/spf13/viper"
-	"log"
 )
 
 type Config struct {
@@ -15,7 +14,7 @@ type Config struct {
 		ChatID     int64  `mapstructure:"chatId"`
 		UserName   string `mapstructure:"userName"`
 		WebHookUrl string `mapstructure:"webHookUrl"`
-	} `mapstructure:"telegram"`
+	} `mapstructure:"notification"`
 }
 
 func GetConfigInfo() Config {
@@ -27,11 +26,11 @@ func GetConfigInfo() Config {
 	v.AddConfigPath("config")
 
 	if err := v.ReadInConfig(); err != nil {
-		log.Printf("Error reading config file, %s", err)
+		logger.Errorf("Error reading config file, %s", err)
 	}
 
 	if err := v.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to unmarshal config into struct: %v", err)
+		logger.Errorf("Unable to unmarshal config into struct: %v", err)
 	}
 
 	return config
