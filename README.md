@@ -18,8 +18,8 @@ To automatically compund your AXS rewards every day:
 3. Add the following content to the `axs_staking_info.yml` file:
 - `chainID: 2020`
 - `gasLimit: 371098`
-- `accountAddress: {your account address starting with 0x}`
-- `pk: {your private key starting with 0x}`
+- `pk: {your private key starting without 0x}`
+  - Your wallet address will be derived from the private key.
 
 4. This program automatically tracks your previous compound time and compounds your rewards every 24 hours.
 - AXS allows you to coumpound every 24hours.
