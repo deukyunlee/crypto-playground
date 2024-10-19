@@ -41,8 +41,6 @@ Thereafter, the program will automatically compound every 24 hours + 1 minute.
       - `userName`
       - `webHookUrl`
 
-![image](https://github.com/user-attachments/assets/0ff800d9-6843-425c-b799-6d5d6160bd70)
-
 - You can interact with the bot using certain commands. <br/>
 ![image-Photoroom (2)](https://github.com/user-attachments/assets/17d80ca6-aca4-4381-93f7-a51638aeb3ec)
 
