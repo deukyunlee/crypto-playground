@@ -140,10 +140,11 @@ func (m *EvmManager) GetTotalStaked() (*big.Float, error) {
 }
 
 func (m *EvmManager) GetUserRewardInfo() (UserRewardResult, error) {
-	configInfo := util.GetConfigInfo()
 
 	var userReward UserRewardResult
-	accountAddressStr := configInfo.AccountAddress
+	pk := util.GetConfigInfo().PK
+	accountAddressStr := util.GetAddressFromPrivateKey(pk)
+
 	stakingManagerContractAddress := common.HexToAddress(StakingManagerContract)
 	stakingContractAddress := common.HexToAddress(StakingContractAddress)
 	accountAddress := common.HexToAddress(accountAddressStr)
@@ -179,8 +180,8 @@ func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 
 	chainId := configInfo.ChainID
 	gasLimit := configInfo.GasLimit
-	accountAddressStr := configInfo.AccountAddress
-	PK := configInfo.PK
+	pk := util.GetConfigInfo().PK
+	accountAddressStr := util.GetAddressFromPrivateKey(pk)
 
 	accountAddress := common.HexToAddress(accountAddressStr)
 
@@ -229,7 +230,7 @@ func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 		GasLimit: gasLimit,
 		GasPrice: gasPrice,
 		Signer: func(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
-			privateKey, err := crypto.HexToECDSA(PK[2:])
+			privateKey, err := crypto.HexToECDSA(pk[2:])
 			if err != nil {
 				return nil, err
 			}

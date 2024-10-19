@@ -19,8 +19,10 @@ var (
 const roninExplorerUri = "https://app.roninchain.com"
 
 func CreatePeriodicalTelegramMessage() {
+
 	coreManager := &core.EvmManager{}
-	accountAddress := util.GetConfigInfo().AccountAddress
+	pk := util.GetConfigInfo().PK
+	accountAddress := util.GetAddressFromPrivateKey(pk)
 
 	latestTxHash, err := coreManager.AutoCompoundRewards()
 

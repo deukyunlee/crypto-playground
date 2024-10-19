@@ -20,8 +20,9 @@ func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	logger.Infof("Received message from %s: %s\n", message.From.Username, message.Text)
 
 	reply := ""
-	accountAddress := util.GetConfigInfo().AccountAddress
-
+	pk := util.GetConfigInfo().PK
+	accountAddress := util.GetAddressFromPrivateKey(pk)
+	
 	switch message.Text {
 	case "staking":
 		stakingAmount, err := coreManager.GetStakingAmount(accountAddress)

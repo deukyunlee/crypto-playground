@@ -5,11 +5,10 @@ import (
 )
 
 type Config struct {
-	ChainID        int64  `mapstructure:"chainId"`
-	GasLimit       uint64 `mapstructure:"gasLimit"`
-	AccountAddress string `mapstructure:"accountAddress"`
-	PK             string `mapstructure:"pk"`
-	Telegram       struct {
+	ChainID  int64  `mapstructure:"chainId"`
+	GasLimit uint64 `mapstructure:"gasLimit"`
+	PK       string `mapstructure:"pk"`
+	Telegram struct {
 		Token      string `mapstructure:"token"`
 		ChatID     int64  `mapstructure:"chatId"`
 		UserName   string `mapstructure:"userName"`

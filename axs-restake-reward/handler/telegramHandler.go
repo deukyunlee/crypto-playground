@@ -19,7 +19,8 @@ func NewTelegramHandler(evmManager *core.EvmManager) *TelegramHandler {
 
 func (h *TelegramHandler) HandleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	reply := ""
-	accountAddress := util.GetConfigInfo().AccountAddress
+	pk := util.GetConfigInfo().PK
+	accountAddress := util.GetAddressFromPrivateKey(pk)
 
 	switch message.Text {
 	case "staking":
