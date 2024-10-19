@@ -64,7 +64,7 @@ func init() {
 
 func main() {
 	// The code is abstracted through interfaces. EVM implements EvmManager, and other chains will be added later.
-	coreManager := &core.EvmManager{}
+	var coreManager core.CoreManager = &core.EvmManager{}
 
 	userRewardInfo, err := coreManager.GetUserRewardInfo()
 	if err != nil {

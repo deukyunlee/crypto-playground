@@ -20,6 +20,17 @@ const axsContractAddress = "0x97a9107c1793bc407d6f527b77e7fff4d812bece"
 
 type EvmManager struct{}
 
+const (
+	StakingContractAddress        = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
+	AutoCompoundRewardsMethodName = "restakeRewards"
+	StakingManagerContract        = "0x8bd81a19420bad681b7bfc20e703ebd8e253782d"
+	EstimateGasSelector           = "0x3d8527ba"
+	EstimateGasMaxRetryCount      = 5
+	EstimateGasRetryDelay         = 1 * time.Minute
+	PendingNonceMaxRetryCount     = 5
+	PendingNonceRetryDelay        = 1 * time.Minute
+)
+
 var (
 	logger = logging.GetLogger()
 )
@@ -168,12 +179,7 @@ func (m *EvmManager) GetUserRewardInfo() (UserRewardResult, error) {
 	return userReward, nil
 }
 
-const (
-	StakingContractAddress        = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
-	AutoCompoundRewardsMethodName = "restakeRewards"
-)
-
-func AutoCompoundRewards() string {
+func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 	configInfo := util.GetConfigInfo()
 
 	chainId := configInfo.ChainID
@@ -191,17 +197,19 @@ func AutoCompoundRewards() string {
 
 	contract := bind.NewBoundContract(contractAddress, parsedABI, ethCli, ethCli, ethCli)
 
-	nonce, err := GetPendingNonceWithRetry(ctx, ethCli, accountAddress)
+	nonce, err := GetPendingNonceWithRetry(ethCli, accountAddress, ctx)
 	if err != nil {
 		logger.Errorf("err: %s", err)
+		return "", err
 	}
 	logger.Infof("Nonce: %d\n", nonce)
 
-	logger.Info("Restaking...")
+	logger.Info("Auto Compound Rewards...")
 
 	gasPrice, err := ethCli.SuggestGasPrice(ctx)
 	if err != nil {
 		logger.Errorf("err: %s", err)
+		return "", err
 	}
 
 	msg := ethereum.CallMsg{
@@ -213,7 +221,7 @@ func AutoCompoundRewards() string {
 
 	if err != nil {
 		logger.Errorf("err: %s", err)
-		return ""
+		return "", err
 	}
 	logger.Infof("gas: %d\n", gas)
 
@@ -234,6 +242,7 @@ func AutoCompoundRewards() string {
 	}, AutoCompoundRewardsMethodName)
 	if err != nil {
 		logger.Errorf("err: %s", err)
+		return "", err
 	}
 
 	txHash := tx.Hash()
@@ -257,7 +266,7 @@ func AutoCompoundRewards() string {
 		logger.Info(finalReceipt)
 	}
 
-	return txHash.Hex()
+	return txHash.Hex(), err
 }
 
 func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {
@@ -291,4 +300,39 @@ func waitForTransactionReceipt(ctx context.Context, client *ethclient.Client, tx
 			return nil
 		}
 	}
+}
+
+func GetPendingNonceWithRetry(ethCli *ethclient.Client, accountAddress common.Address, ctx context.Context) (nonce uint64, err error) {
+
+	for i := 0; i < PendingNonceMaxRetryCount; i++ {
+		nonce, err = ethCli.PendingNonceAt(ctx, accountAddress)
+		if err != nil {
+			logger.Errorf("Failed to get Pending nonce (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
+
+			// Delay before retrying
+			time.Sleep(PendingNonceRetryDelay)
+		} else {
+			return nonce, nil
+		}
+	}
+
+	return 0, nil
+}
+
+func EstimateGasWithRetry(ctx context.Context, ethCli *ethclient.Client, msg ethereum.CallMsg) (gas uint64, err error) {
+
+	for i := 0; i < EstimateGasMaxRetryCount; i++ {
+		gas, err = ethCli.EstimateGas(ctx, msg)
+		if err != nil {
+
+			logger.Errorf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
+
+			// Delay before retrying
+			time.Sleep(EstimateGasRetryDelay)
+		} else {
+			return gas, nil // Success
+		}
+	}
+
+	return 0, err
 }

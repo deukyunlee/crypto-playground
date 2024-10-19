@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	latestTxHash string
-	logger       = logging.GetLogger()
+	logger = logging.GetLogger()
 )
 
 const roninExplorerUri = "https://app.roninchain.com"
@@ -20,7 +19,7 @@ const roninExplorerUri = "https://app.roninchain.com"
 func CreatePeriodicalTelegramMessage() {
 	coreManager := &core.EvmManager{}
 
-	latestTxHash = core.AutoCompoundRewards()
+	latestTxHash, err := coreManager.AutoCompoundRewards()
 
 	stakingAmount, err := coreManager.GetStakingAmount()
 	if err != nil {
