@@ -3,9 +3,11 @@ package notification
 import (
 	"fmt"
 	"github.com/deukyunlee/crypto-playground/core"
+	"github.com/deukyunlee/crypto-playground/handler"
 	"github.com/deukyunlee/crypto-playground/logging"
 	"github.com/deukyunlee/crypto-playground/util"
 	"github.com/mymmrac/telego"
+	"net/http"
 	"os"
 	"time"
 )
@@ -18,15 +20,16 @@ const roninExplorerUri = "https://app.roninchain.com"
 
 func CreatePeriodicalTelegramMessage() {
 	coreManager := &core.EvmManager{}
+	accountAddress := util.GetConfigInfo().AccountAddress
 
 	latestTxHash, err := coreManager.AutoCompoundRewards()
 
-	stakingAmount, err := coreManager.GetStakingAmount()
+	stakingAmount, err := coreManager.GetStakingAmount(accountAddress)
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}
 
-	balance, err := coreManager.GetBalance()
+	balance, err := coreManager.GetBalance(accountAddress)
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}
@@ -39,9 +42,9 @@ func CreatePeriodicalTelegramMessage() {
 		roninExplorerUri+"/tx/"+latestTxHash,
 	)
 
-	SendTelegramAutoCompoundMessage(message)
+	sendTelegramAutoCompoundMessage(message)
 }
-func SendTelegramAutoCompoundMessage(message string) {
+func sendTelegramAutoCompoundMessage(message string) {
 	configInfo := util.GetConfigInfo()
 
 	telegramBotToken := configInfo.Telegram.Token
@@ -66,4 +69,23 @@ func SendTelegramAutoCompoundMessage(message string) {
 	}
 
 	logger.Info("Message sent successfully!")
+}
+
+func InitializeTelegramBot() {
+	configInfo := util.GetConfigInfo()
+	telegramToken := configInfo.Telegram.Token
+	webHookUrl := configInfo.Telegram.WebHookUrl
+
+	telegramBot, err := telego.NewBot(telegramToken)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	err = telegramBot.SetWebhook(&telego.SetWebhookParams{URL: webHookUrl})
+	if err != nil {
+		logger.Error(err)
+	}
+
+	http.HandleFunc("/webhook", handler.HandleWebhook(telegramBot))
+	go handler.StartWebhookServer()
 }

@@ -18,27 +18,26 @@ import (
 
 const axsContractAddress = "0x97a9107c1793bc407d6f527b77e7fff4d812bece"
 
-type EvmManager struct{}
+type EvmManager struct {
+}
 
 const (
 	StakingContractAddress        = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
 	AutoCompoundRewardsMethodName = "restakeRewards"
 	StakingManagerContract        = "0x8bd81a19420bad681b7bfc20e703ebd8e253782d"
 	EstimateGasSelector           = "0x3d8527ba"
-	EstimateGasMaxRetryCount      = 5
-	EstimateGasRetryDelay         = 1 * time.Minute
-	PendingNonceMaxRetryCount     = 5
-	PendingNonceRetryDelay        = 1 * time.Minute
 )
 
 var (
 	logger = logging.GetLogger()
 )
 
-func (m *EvmManager) GetBalance() (*big.Float, error) {
-	configInfo := util.GetConfigInfo()
+func NewClientManager(client *ethclient.Client) *ethClient.ClientManger {
+	return &ethClient.ClientManger{Client: client}
+}
 
-	accountAddress := common.HexToAddress(configInfo.AccountAddress)
+func (m *EvmManager) GetBalance(accountAddress string) (*big.Float, error) {
+
 	contractAddress := common.HexToAddress(axsContractAddress)
 
 	ethCli, ctx := ethClient.GetEthClient()
@@ -72,11 +71,7 @@ func (m *EvmManager) GetBalance() (*big.Float, error) {
 	return balanceAmountInEther, nil
 }
 
-func (m *EvmManager) GetStakingAmount() (*big.Float, error) {
-	configInfo := util.GetConfigInfo()
-
-	accountAddressStr := configInfo.AccountAddress
-	accountAddress := common.HexToAddress(accountAddressStr)
+func (m *EvmManager) GetStakingAmount(accountAddress string) (*big.Float, error) {
 	contractAddress := common.HexToAddress(StakingContractAddress)
 
 	ethCli, ctx := ethClient.GetEthClient()
@@ -197,7 +192,9 @@ func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 
 	contract := bind.NewBoundContract(contractAddress, parsedABI, ethCli, ethCli, ethCli)
 
-	nonce, err := GetPendingNonceWithRetry(ethCli, accountAddress, ctx)
+	cliManager := NewClientManager(ethCli)
+	nonce, err := cliManager.GetPendingNonceWithRetry(accountAddress, ctx)
+
 	if err != nil {
 		logger.Errorf("err: %s", err)
 		return "", err
@@ -217,7 +214,7 @@ func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 		To:   &contractAddress,
 		Data: common.FromHex(EstimateGasSelector),
 	}
-	gas, err := EstimateGasWithRetry(ctx, ethCli, msg)
+	gas, err := cliManager.EstimateGasWithRetry(ctx, msg)
 
 	if err != nil {
 		logger.Errorf("err: %s", err)
@@ -269,6 +266,19 @@ func (m *EvmManager) AutoCompoundRewards() (transactionHash string, err error) {
 	return txHash.Hex(), err
 }
 
+func (m *EvmManager) GetLastClaimedTime() time.Time {
+	userRewardInfo, err := m.GetUserRewardInfo()
+	if err != nil {
+		logger.Errorf("err: %s", err)
+		return time.Unix(0, 0)
+	}
+	lastClaimedTimestampUnix := userRewardInfo.LastClaimedBlock.Int64()
+	lastClaimedTime := time.Unix(lastClaimedTimestampUnix, 0).UTC()
+	logger.Infof("lastClaimedTime: %s\n", lastClaimedTime.In(util.Location))
+
+	return lastClaimedTime
+}
+
 func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) *types.Receipt {
 	receipt, err := client.TransactionReceipt(ctx, txHash)
 	if err != nil {
@@ -300,39 +310,4 @@ func waitForTransactionReceipt(ctx context.Context, client *ethclient.Client, tx
 			return nil
 		}
 	}
-}
-
-func GetPendingNonceWithRetry(ethCli *ethclient.Client, accountAddress common.Address, ctx context.Context) (nonce uint64, err error) {
-
-	for i := 0; i < PendingNonceMaxRetryCount; i++ {
-		nonce, err = ethCli.PendingNonceAt(ctx, accountAddress)
-		if err != nil {
-			logger.Errorf("Failed to get Pending nonce (attempt %d/%d): %v", i+1, PendingNonceMaxRetryCount, err)
-
-			// Delay before retrying
-			time.Sleep(PendingNonceRetryDelay)
-		} else {
-			return nonce, nil
-		}
-	}
-
-	return 0, nil
-}
-
-func EstimateGasWithRetry(ctx context.Context, ethCli *ethclient.Client, msg ethereum.CallMsg) (gas uint64, err error) {
-
-	for i := 0; i < EstimateGasMaxRetryCount; i++ {
-		gas, err = ethCli.EstimateGas(ctx, msg)
-		if err != nil {
-
-			logger.Errorf("EstimateGas failed (attempt %d/%d): %v", i+1, EstimateGasMaxRetryCount, err)
-
-			// Delay before retrying
-			time.Sleep(EstimateGasRetryDelay)
-		} else {
-			return gas, nil // Success
-		}
-	}
-
-	return 0, err
 }

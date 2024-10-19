@@ -6,6 +6,13 @@ import (
 	"net/http"
 )
 
+func StartWebhookServer() {
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		logger.Errorf("err: %s", err)
+	}
+}
+
 func HandleWebhook(telegramBot *telego.Bot) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
