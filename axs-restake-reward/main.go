@@ -63,7 +63,10 @@ func init() {
 }
 
 func main() {
-	userRewardInfo, err := core.GetUserRewardInfo()
+	// The code is abstracted through interfaces. EVM implements EvmManager, and other chains will be added later.
+	coreManager := &core.EvmManager{}
+
+	userRewardInfo, err := coreManager.GetUserRewardInfo()
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}
@@ -88,7 +91,7 @@ func main() {
 
 		time.Sleep(util.Duration)
 
-		userRewardInfo, err := core.GetUserRewardInfo()
+		userRewardInfo, err := coreManager.GetUserRewardInfo()
 		if err != nil {
 			logger.Errorf("err: %s", err)
 		}

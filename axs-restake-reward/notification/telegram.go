@@ -18,14 +18,16 @@ var (
 const roninExplorerUri = "https://app.roninchain.com"
 
 func CreatePeriodicalTelegramMessage() {
+	coreManager := &core.EvmManager{}
+
 	latestTxHash = core.AutoCompoundRewards()
 
-	stakingAmount, err := core.GetStakingAmount()
+	stakingAmount, err := coreManager.GetStakingAmount()
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}
 
-	balance, err := core.GetBalance()
+	balance, err := coreManager.GetBalance()
 	if err != nil {
 		logger.Errorf("err: %s", err)
 	}

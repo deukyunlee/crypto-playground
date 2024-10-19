@@ -15,13 +15,15 @@ var (
 )
 
 func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
+	coreManager := &core.EvmManager{}
+
 	logger.Infof("Received message from %s: %s\n", message.From.Username, message.Text)
 
 	reply := ""
 
 	switch message.Text {
 	case "staking":
-		stakingAmount, err := core.GetStakingAmount()
+		stakingAmount, err := coreManager.GetStakingAmount()
 		if err != nil {
 			logger.Errorf("err: %s", err)
 		}
@@ -29,17 +31,17 @@ func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	case "tick":
 		reply = fmt.Sprintf("*[Next Restaking Time]*: %s\n %s left", util.NextTick.In(util.Location), util.NextTick.Sub(time.Now()))
 	case "balance":
-		balance, err := core.GetBalance()
+		balance, err := coreManager.GetBalance()
 		if err != nil {
 			logger.Errorf("err: %s", err)
 		}
 		reply = fmt.Sprintf("*[Current Balance]*: %s", balance.Text('f', 3))
 	case "reward":
-		stakingAmount, err := core.GetStakingAmount()
+		stakingAmount, err := coreManager.GetStakingAmount()
 		if err != nil {
 			logger.Errorf("err: %s", err)
 		}
-		totalStaked, err := core.GetTotalStaked()
+		totalStaked, err := coreManager.GetTotalStaked()
 		if err != nil {
 			logger.Errorf("err: %s", err)
 		}

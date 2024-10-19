@@ -16,9 +16,157 @@ import (
 	"time"
 )
 
+const axsContractAddress = "0x97a9107c1793bc407d6f527b77e7fff4d812bece"
+
+type EvmManager struct{}
+
 var (
 	logger = logging.GetLogger()
 )
+
+func (m *EvmManager) GetBalance() (*big.Float, error) {
+	configInfo := util.GetConfigInfo()
+
+	accountAddress := common.HexToAddress(configInfo.AccountAddress)
+	contractAddress := common.HexToAddress(axsContractAddress)
+
+	ethCli, ctx := ethClient.GetEthClient()
+
+	parsedABI := util.ParseAbi("abi/axs_balance_of_abi.json")
+
+	data, err := parsedABI.Pack("balanceOf", accountAddress)
+	if err != nil {
+		return nil, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+
+	output, err := ethCli.CallContract(ctx, callMsg, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var balanceAmount *big.Int
+	err = parsedABI.UnpackIntoInterface(&balanceAmount, "balanceOf", output)
+	if err != nil {
+		logger.Errorf("Error unpacking output: %s", err)
+		return nil, err
+	}
+
+	weiPerEther := new(big.Float).SetFloat64(1e18)
+	balanceAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(balanceAmount), weiPerEther)
+
+	return balanceAmountInEther, nil
+}
+
+func (m *EvmManager) GetStakingAmount() (*big.Float, error) {
+	configInfo := util.GetConfigInfo()
+
+	accountAddressStr := configInfo.AccountAddress
+	accountAddress := common.HexToAddress(accountAddressStr)
+	contractAddress := common.HexToAddress(StakingContractAddress)
+
+	ethCli, ctx := ethClient.GetEthClient()
+
+	parsedABI := util.ParseAbi("abi/axs_staking_abi.json")
+
+	data, err := parsedABI.Pack("getStakingAmount", accountAddress)
+	if err != nil {
+		return nil, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+
+	output, err := ethCli.CallContract(ctx, callMsg, nil)
+	if err != nil {
+
+		return nil, err
+	}
+
+	var stakingAmount *big.Int
+	err = parsedABI.UnpackIntoInterface(&stakingAmount, "getStakingAmount", output)
+	if err != nil {
+		logger.Errorf("Error unpacking output: %s", err)
+	}
+	weiPerEther := new(big.Float).SetFloat64(1e18)
+
+	stakingAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(stakingAmount), weiPerEther)
+
+	return stakingAmountInEther, nil
+}
+
+func (m *EvmManager) GetTotalStaked() (*big.Float, error) {
+	contractAddress := common.HexToAddress(StakingContractAddress)
+
+	ethCli, ctx := ethClient.GetEthClient()
+
+	parsedABI := util.ParseAbi("abi/axs_staking_abi.json")
+
+	data, err := parsedABI.Pack("getStakingTotal")
+	if err != nil {
+		return nil, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+
+	output, err := ethCli.CallContract(ctx, callMsg, nil)
+	if err != nil {
+
+		return nil, err
+	}
+
+	var stakingAmount *big.Int
+	err = parsedABI.UnpackIntoInterface(&stakingAmount, "getStakingTotal", output)
+	if err != nil {
+		logger.Errorf("Error unpacking output: %s", err)
+	}
+	weiPerEther := new(big.Float).SetFloat64(1e18)
+
+	stakingAmountInEther := new(big.Float).Quo(new(big.Float).SetInt(stakingAmount), weiPerEther)
+
+	return stakingAmountInEther, nil
+}
+
+func (m *EvmManager) GetUserRewardInfo() (UserRewardResult, error) {
+	configInfo := util.GetConfigInfo()
+
+	var userReward UserRewardResult
+	accountAddressStr := configInfo.AccountAddress
+	stakingManagerContractAddress := common.HexToAddress(StakingManagerContract)
+	stakingContractAddress := common.HexToAddress(StakingContractAddress)
+	accountAddress := common.HexToAddress(accountAddressStr)
+
+	ethCli, ctx := ethClient.GetEthClient()
+
+	parsedABI := util.ParseAbi("abi/staking_manager_abi.json")
+
+	data, err := parsedABI.Pack("userRewardInfo", stakingContractAddress, accountAddress)
+	if err != nil {
+		return userReward, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &stakingManagerContractAddress,
+		Data: data,
+	}
+
+	output, err := ethCli.CallContract(ctx, callMsg, nil)
+	if err != nil {
+		return userReward, err
+	}
+
+	err = parsedABI.UnpackIntoInterface(&userReward, "userRewardInfo", output)
+	if err != nil {
+		logger.Errorf("Error unpacking output: %s", err)
+	}
+
+	return userReward, nil
+}
 
 const (
 	StakingContractAddress        = "0x05b0bb3c1c320b280501b86706c3551995bc8571"
