@@ -45,4 +45,6 @@ Thereafter, the program will automatically compound every 24 hours + 1 minute.
 ![image-Photoroom (2)](https://github.com/user-attachments/assets/17d80ca6-aca4-4381-93f7-a51638aeb3ec)
 
 6. Unlock Schedules for AXS in Detail
+
+![image](https://github.com/user-attachments/assets/5a629a26-6b7a-4906-a80f-10c5c3652ca9)
 <img width="612" alt="image" src="https://github.com/user-attachments/assets/53486155-6719-467e-b246-b4524517fdae">
