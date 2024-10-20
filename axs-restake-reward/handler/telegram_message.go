@@ -2,9 +2,9 @@ package handler
 
 import (
 	"fmt"
-	"github.com/deukyunlee/crypto-playground/core"
-	"github.com/deukyunlee/crypto-playground/logging"
-	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/core"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/util"
 	"github.com/mymmrac/telego"
 	"math/big"
 	"time"
@@ -22,7 +22,7 @@ func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	reply := ""
 	pk := util.GetConfigInfo().PK
 	accountAddress := util.GetAddressFromPrivateKey(pk)
-	
+
 	switch message.Text {
 	case "staking":
 		stakingAmount, err := coreManager.GetStakingAmount(accountAddress)

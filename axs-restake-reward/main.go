@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/deukyunlee/crypto-playground/core"
-	"github.com/deukyunlee/crypto-playground/logging"
-	"github.com/deukyunlee/crypto-playground/notification"
-	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/core"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/notification"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/util"
 	"time"
 )
 

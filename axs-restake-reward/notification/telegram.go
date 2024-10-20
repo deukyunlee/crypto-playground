@@ -2,10 +2,10 @@ package notification
 
 import (
 	"fmt"
-	"github.com/deukyunlee/crypto-playground/core"
-	"github.com/deukyunlee/crypto-playground/handler"
-	"github.com/deukyunlee/crypto-playground/logging"
-	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/core"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/handler"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/util"
 	"github.com/mymmrac/telego"
 	"net/http"
 	"os"

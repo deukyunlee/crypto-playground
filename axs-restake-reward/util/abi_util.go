@@ -1,7 +1,7 @@
 package util
 
 import (
-	"github.com/deukyunlee/crypto-playground/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"io"
 	"os"

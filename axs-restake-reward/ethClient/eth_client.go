@@ -2,7 +2,7 @@ package ethClient
 
 import (
 	"context"
-	"github.com/deukyunlee/crypto-playground/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

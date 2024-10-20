@@ -7,8 +7,7 @@ import (
 	"log"
 )
 
-func GetAddressFromPrivateKey(pk string) string {
-	privateKeyHex := GetConfigInfo().PK
+func GetAddressFromPrivateKey(privateKeyHex string) string {
 	privateKeyBytes, err := hex.DecodeString(privateKeyHex)
 	if err != nil {
 		log.Fatal(err)

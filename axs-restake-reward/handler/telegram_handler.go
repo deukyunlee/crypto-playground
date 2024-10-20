@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/deukyunlee/crypto-playground/core"
-	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/core"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/util"
 	"github.com/mymmrac/telego"
 )
 

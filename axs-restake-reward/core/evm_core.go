@@ -3,9 +3,9 @@ package core
 import (
 	"context"
 	"errors"
-	"github.com/deukyunlee/crypto-playground/ethClient"
-	"github.com/deukyunlee/crypto-playground/logging"
-	"github.com/deukyunlee/crypto-playground/util"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/ethClient"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/logging"
+	"github.com/deukyunlee/crypto-playground/axs-restake-reward/util"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -143,6 +143,7 @@ func (m *EvmManager) GetUserRewardInfo() (UserRewardResult, error) {
 
 	var userReward UserRewardResult
 	pk := util.GetConfigInfo().PK
+
 	accountAddressStr := util.GetAddressFromPrivateKey(pk)
 
 	stakingManagerContractAddress := common.HexToAddress(StakingManagerContract)
