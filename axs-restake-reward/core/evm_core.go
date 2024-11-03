@@ -36,13 +36,15 @@ func NewClientManager(client *ethclient.Client) *ethClient.ClientManger {
 	return &ethClient.ClientManger{Client: client}
 }
 
-func (m *EvmManager) GetBalance(accountAddress string) (*big.Float, error) {
+func (m *EvmManager) GetBalance(accountAddressStr string) (*big.Float, error) {
 
 	contractAddress := common.HexToAddress(axsContractAddress)
 
 	ethCli, ctx := ethClient.GetEthClient()
 
 	parsedABI := util.ParseAbi("abi/axs_balance_of_abi.json")
+
+	accountAddress := common.HexToAddress(accountAddressStr)
 
 	data, err := parsedABI.Pack("balanceOf", accountAddress)
 	if err != nil {
@@ -71,12 +73,14 @@ func (m *EvmManager) GetBalance(accountAddress string) (*big.Float, error) {
 	return balanceAmountInEther, nil
 }
 
-func (m *EvmManager) GetStakingAmount(accountAddress string) (*big.Float, error) {
+func (m *EvmManager) GetStakingAmount(accountAddressStr string) (*big.Float, error) {
 	contractAddress := common.HexToAddress(StakingContractAddress)
 
 	ethCli, ctx := ethClient.GetEthClient()
 
 	parsedABI := util.ParseAbi("abi/axs_staking_abi.json")
+
+	accountAddress := common.HexToAddress(accountAddressStr)
 
 	data, err := parsedABI.Pack("getStakingAmount", accountAddress)
 	if err != nil {

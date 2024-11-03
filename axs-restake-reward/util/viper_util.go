@@ -13,7 +13,7 @@ type Config struct {
 		ChatID     int64  `mapstructure:"chatId"`
 		UserName   string `mapstructure:"userName"`
 		WebHookUrl string `mapstructure:"webHookUrl"`
-	} `mapstructure:"notification"`
+	} `mapstructure:"telegram"`
 }
 
 func GetConfigInfo() Config {
