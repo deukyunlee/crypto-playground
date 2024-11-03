@@ -14,6 +14,8 @@ var (
 	logger = logging.GetLogger()
 )
 
+const daysInMonth = 31
+
 func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 	coreManager := &core.EvmManager{}
 
@@ -50,15 +52,11 @@ func handleMessage(telegramBot *telego.Bot, message *telego.Message) {
 
 		unlockSchedule := big.NewFloat(1566000)
 
-		now := time.Now()
-		currentYear, currentMonth, _ := now.Date()
-		firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.UTC)
-		firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
-		daysInMonth := big.NewFloat(firstOfNextMonth.Sub(firstOfMonth).Hours() / 24)
+		daysInMonthFloat := big.NewFloat(daysInMonth)
 
 		monthlyTotalReward := new(big.Float).Quo(unlockSchedule, totalStaked)
 		userMonthlyReward := new(big.Float).Mul(monthlyTotalReward, stakingAmount)
-		userDailyReward := new(big.Float).Quo(userMonthlyReward, daysInMonth)
+		userDailyReward := new(big.Float).Quo(userMonthlyReward, daysInMonthFloat)
 
 		reply = fmt.Sprintf("*[Estimated Daily Reward]*: %s", userDailyReward.Text('f', 3))
 	default:
